@@ -30,8 +30,9 @@ interface TransactionDao {
     )
 
     @Delete
+    @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteTransaction(
-        transaction: TransactionEntity
+        id: Long
     )
 
     // Clear a specific day
