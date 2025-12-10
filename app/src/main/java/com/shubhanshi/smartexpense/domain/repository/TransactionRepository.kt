@@ -1,0 +1,21 @@
+package com.shubhanshi.smartexpense.domain.repository
+
+import com.shubhanshi.smartexpense.domain.model.Transaction
+import kotlinx.coroutines.flow.Flow
+
+
+/**
+ * Abstraction over the data source.
+ * ViewModel will depend on this, not directly on DAO.
+ */
+
+interface TransactionRepository {
+
+    fun getTransactionForDate(dateEpochDate: Long): Flow<List<Transaction>>
+
+    suspend fun addTransaction(transaction: Transaction)
+
+    suspend fun deleteTransaction(id:Long)
+
+    suspend fun clearForDate(dateEpochDate: Long)
+}
