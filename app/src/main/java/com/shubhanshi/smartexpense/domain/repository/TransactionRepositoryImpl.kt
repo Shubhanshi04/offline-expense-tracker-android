@@ -16,6 +16,15 @@ class TransactionRepositoryImpl(
         }
     }
 
+    override fun getTransactionsForMonth(
+        startEpochDay: Long,
+        endEpochDay: Long
+    ): Flow<List<Transaction>> {
+       return dao.getTransactionsForMonth(startEpochDay,endEpochDay).map{list->
+           list.map{it.toDomain()}
+       }
+    }
+
     override suspend fun addTransaction(transaction: Transaction) {
         dao.insertTransaction(transaction.toEntity())
     }

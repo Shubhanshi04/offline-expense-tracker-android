@@ -17,6 +17,18 @@ interface TransactionDao {
         dateEpochDay: Long
     ): Flow<List<TransactionEntity>>
 
+    @Query(
+        """
+    SELECT * FROM transactions
+    WHERE dateEpochDay BETWEEN :startEpochDay AND :endEpochDay
+    ORDER BY dateEpochDay DESC, id DESC
+    """
+    )
+    fun getTransactionsForMonth(
+        startEpochDay: Long,
+        endEpochDay: Long
+    ): Flow<List<TransactionEntity>>
+
     // Insert income / expense
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(
@@ -29,7 +41,7 @@ interface TransactionDao {
         transactionId: Long
     )
 
-    @Delete
+
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteTransaction(
         id: Long

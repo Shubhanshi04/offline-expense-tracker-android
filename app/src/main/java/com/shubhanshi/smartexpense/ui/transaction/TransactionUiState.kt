@@ -10,11 +10,10 @@ import java.time.LocalDate
 
 data class TransactionUiState(
     val selectedDate: LocalDate = LocalDate.now(),
-    val transactions: List<Transaction> = emptyList(),
-    val totalIncome: Double = 0.0,
-    val totalExpense: Double = 0.0,
+    val transactionsForDay: List<Transaction> = emptyList(),
+    val monthIncome: Double = 0.0,
+    val monthExpense: Double = 0.0,
+    val monthNet: Double = 0.0,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
-) {
-    val net: Double get() = totalIncome - totalExpense
-}
+)
