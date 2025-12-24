@@ -13,6 +13,8 @@ interface TransactionRepository {
 
     fun getTransactionForDate(dateEpochDate: Long): Flow<List<Transaction>>
 
+    fun getTransactionsForMonth(startEpochDay: Long, endEpochDay: Long): Flow<List<Transaction>>
+
     suspend fun addTransaction(transaction: Transaction)
 
     suspend fun deleteTransaction(id:Long)
