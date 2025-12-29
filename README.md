@@ -68,3 +68,7 @@ Android Developer
 ## License
 
 This project is intended for learning and portfolio purposes.
+
+
+## Status
+Under process
