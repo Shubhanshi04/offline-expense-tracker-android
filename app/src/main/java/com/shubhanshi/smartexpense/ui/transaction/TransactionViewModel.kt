@@ -68,9 +68,15 @@ class TransactionViewModel(
         _selectedDate.value = date
     }
 
-    fun deleteTransaction(transaction: Transaction){
+    fun deleteTransaction(transaction: Transaction) {
         viewModelScope.launch {
             repository.deleteTransaction(transaction.id)
+        }
+    }
+
+    fun updateTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            repository.updateTransaction(transaction)
         }
 
     }

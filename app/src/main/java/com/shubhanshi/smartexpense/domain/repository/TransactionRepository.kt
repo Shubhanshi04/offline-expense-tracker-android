@@ -22,5 +22,7 @@ interface TransactionRepository {
 
     suspend fun deleteTransaction(id:Long)
 
+    suspend fun updateTransaction(transaction: Transaction)
+
     suspend fun clearForDate(dateEpochDate: Long)
 }

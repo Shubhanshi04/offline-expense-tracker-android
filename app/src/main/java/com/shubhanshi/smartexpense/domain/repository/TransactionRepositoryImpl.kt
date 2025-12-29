@@ -43,6 +43,10 @@ class TransactionRepositoryImpl(
         dao.deleteTransaction(id)
     }
 
+    override suspend fun updateTransaction(transaction: Transaction) {
+        dao.updateTransaction(transaction.toEntity())
+    }
+
     override suspend fun clearForDate(dateEpochDate: Long) {
        dao.clearForDate(dateEpochDate)
     }
