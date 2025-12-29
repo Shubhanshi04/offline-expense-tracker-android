@@ -6,6 +6,7 @@ import com.shubhanshi.smartexpense.data.toEntity
 import com.shubhanshi.smartexpense.domain.model.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 class TransactionRepositoryImpl(
     private val dao: TransactionDao
@@ -17,12 +18,21 @@ class TransactionRepositoryImpl(
     }
 
     override fun getTransactionsForMonth(
-        startEpochDay: Long,
-        endEpochDay: Long
+        startEpochDay: LocalDate,
+        endEpochDay: LocalDate
     ): Flow<List<Transaction>> {
-       return dao.getTransactionsForMonth(startEpochDay,endEpochDay).map{list->
-           list.map{it.toDomain()}
-       }
+        return dao.getTransactionsForMonth(
+            startEpochDay.toEpochDay(),
+            endEpochDay.toEpochDay()
+        ).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
+
+    override fun getAllTransactions(): Flow<List<Transaction>> {
+        return dao.getAllTransactions().map { list ->
+            list.map { it.toDomain() }
+        }
     }
 
     override suspend fun addTransaction(transaction: Transaction) {

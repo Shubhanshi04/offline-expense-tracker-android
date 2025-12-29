@@ -2,6 +2,7 @@ package com.shubhanshi.smartexpense.domain.repository
 
 import com.shubhanshi.smartexpense.domain.model.Transaction
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 
 /**
@@ -13,7 +14,9 @@ interface TransactionRepository {
 
     fun getTransactionForDate(dateEpochDate: Long): Flow<List<Transaction>>
 
-    fun getTransactionsForMonth(startEpochDay: Long, endEpochDay: Long): Flow<List<Transaction>>
+    fun getAllTransactions(): Flow<List<Transaction>>
+
+    fun getTransactionsForMonth(startEpochDay: LocalDate, endEpochDay: LocalDate): Flow<List<Transaction>>
 
     suspend fun addTransaction(transaction: Transaction)
 

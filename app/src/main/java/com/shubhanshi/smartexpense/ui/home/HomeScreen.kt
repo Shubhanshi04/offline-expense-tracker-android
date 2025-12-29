@@ -1,6 +1,5 @@
 package com.shubhanshi.smartexpense.ui.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -14,16 +13,16 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.shubhanshi.smartexpense.domain.model.Transaction
 import com.shubhanshi.smartexpense.domain.model.TransactionType
 import com.shubhanshi.smartexpense.ui.components.MonthPickerDialog
+import com.shubhanshi.smartexpense.ui.transaction.AddTransactionBottomSheet
 import com.shubhanshi.smartexpense.ui.transaction.TransactionUiState
 import com.shubhanshi.smartexpense.ui.transaction.TransactionViewModel
 import com.shubhanshi.smartexpense.ui.transaction.TransactionViewModelFactory
@@ -37,19 +36,20 @@ fun CalendarTransactionScreen() {
     val context = LocalContext.current
     val viewModel: TransactionViewModel = viewModel(factory = TransactionViewModelFactory(context))
     val uiState by viewModel.uiState.collectAsState()
-    val selectedDate by viewModel.selectedDate.collectAsState()
-    var month by remember { mutableStateOf(selectedDate.month) }
     var title by remember { mutableStateOf("") }
     var amountText by remember { mutableStateOf("") }
+    val month by viewModel.selectedMonth.collectAsState()
     var selectedType by remember { mutableStateOf(TransactionType.EXPENSE) }
     var showMonthPicker by remember { mutableStateOf(false) }
-    var currentMonth by remember {
-        mutableStateOf(YearMonth.now())
-    }
+    var showTransactionSheet by remember { mutableStateOf(false)}
+    val selectedMonth by viewModel.selectedMonth.collectAsState()
+    val selectedDate by viewModel.selectedDate.collectAsState()
+    val transactionsByDate = uiState.transactionsByDate
+    val transactionsForSelectedDate = uiState.transactionsByDate[selectedDate].orEmpty()
 
     Scaffold(
         topBar = { TopAppBar(title = {
-            Text("SmartExpense",
+            Text("Smart Expense",
                 fontWeight = FontWeight.Bold)}) },
     ) { padding ->
         Column(modifier = Modifier
@@ -58,7 +58,7 @@ fun CalendarTransactionScreen() {
             .padding(20.dp)
             .fillMaxSize()) {
             MonthHeader(
-                selectedDate = selectedDate,
+                yearMonth = selectedMonth,
                 onPrevMonth = {
                     viewModel.onMonthSelected(selectedDate.minusMonths(1))
                 },
@@ -93,11 +93,31 @@ fun CalendarTransactionScreen() {
 
             CalendarGrid(
                 modifier = Modifier.weight(1f),
-                selectedDate = selectedDate,
-                onDateSelected = { clickedDate ->
+                yearMonth = month,
+                transactionsByDate = transactionsByDate,
+                onDateClick = { clickedDate ->
                     viewModel.onDateSelected(clickedDate)
+                    showTransactionSheet = true
                 }
             )
+
+            if (showTransactionSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showTransactionSheet = false }
+                ) {
+                    AddTransactionBottomSheet(
+                        selectedDate = selectedDate,
+                        transactions = uiState.transactionsByDate[selectedDate].orEmpty(),
+                        onAddTransaction = { title, amount, type ->
+                            viewModel.addTransaction(title, amount, type)
+                        },
+                        onDeleteTransaction = { transaction ->
+                            viewModel.deleteTransaction(transaction)
+                        },
+                        onDismiss = { showTransactionSheet = false }
+                    )
+                }
+            }
 
             Spacer(Modifier.height(8.dp))
 
@@ -107,7 +127,7 @@ fun CalendarTransactionScreen() {
 
 @Composable
 fun MonthHeader(
-    selectedDate: LocalDate,
+    yearMonth: YearMonth,
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onHeaderClick: () -> Unit,
@@ -126,7 +146,7 @@ fun MonthHeader(
         }
 
         Text(
-            text = selectedDate.format(formatter),
+            text = yearMonth.format(formatter),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable { onHeaderClick() }
@@ -142,85 +162,69 @@ fun MonthHeader(
 
 @Composable
 fun CalendarGrid(
-    modifier: Modifier,
-    selectedDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
+    yearMonth: YearMonth,
+    transactionsByDate: Map<LocalDate, List<Transaction>>,
+    onDateClick: (LocalDate) -> Unit,
+    modifier: Modifier
 ) {
-    val year = selectedDate.year
-    val month = selectedDate.month
-
-    val firstDayOfMonth = LocalDate.of(year, month, 1)
-
-    // ISO: Monday = 1, Sunday = 7
-    val startOffset = firstDayOfMonth.dayOfWeek.value - 1
-
-    val daysInMonth = selectedDate.lengthOfMonth()
+    val firstDay = yearMonth.atDay(1)
+    val startOffset = firstDay.dayOfWeek.value - 1
+    val daysInMonth = yearMonth.lengthOfMonth()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxWidth()
     ) {
 
-        // 1️⃣ Empty cells before day 1
         items(startOffset) {
-            Box(modifier = Modifier.size(40.dp))
+            Spacer(modifier = Modifier.height(80.dp))
         }
 
-        // 2️⃣ Actual days
         items(daysInMonth) { index ->
             val day = index + 1
-            val date = LocalDate.of(year, month, day)
-            val isSelected = date == selectedDate
+            val date = yearMonth.atDay(day)
 
             DayCell(
-                day = day,
-                isSelected = isSelected,
-                onClick = { onDateSelected(date) }
+                date = date,
+                transactions = transactionsByDate[date].orEmpty(),
+                onClick = { onDateClick(date) }
             )
         }
     }
 }
 
-
 @Composable
 fun DayCell(
-    day: Int,
-    isSelected: Boolean,
+    date: LocalDate,
+    transactions: List<Transaction>,
     onClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .padding(4.dp)
-            .fillMaxSize()
-            .clip(MaterialTheme.shapes.medium)
-            .background(
-                if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                else Color.Transparent
-            )
+            .fillMaxWidth()
+            .heightIn(min = 80.dp)
             .clickable { onClick() }
-            .padding(6.dp)
     ) {
-        // Date number
         Text(
-            text = day.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = if (isSelected)
-                MaterialTheme.colorScheme.primary
-            else
-                MaterialTheme.colorScheme.onSurface
+            text = date.dayOfMonth.toString(),
+            fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        transactions.forEach {
+            Text(
+                text = "₹${it.amount}",
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1,
+            )
+        }
 
-        // 🔽 Placeholder for transactions
-        // Later this will be a LazyColumn
-        Text(
-            text = "",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray,
-            maxLines = 2
-        )
+        if (transactions.size > 4) {
+            Text(
+                text = "+${transactions.size - 4} more",
+                style = MaterialTheme.typography.labelSmall
+            )
+        }
     }
 }
 

@@ -1,12 +1,11 @@
 package com.shubhanshi.smartexpense.data.local
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.shubhanshi.smartexpense.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface TransactionDao {
@@ -17,17 +16,18 @@ interface TransactionDao {
         dateEpochDay: Long
     ): Flow<List<TransactionEntity>>
 
-    @Query(
-        """
+    @Query("SELECT * FROM transactions ORDER BY dateEpochDay DESC")
+    fun getAllTransactions(): Flow<List<TransactionEntity>>
+
+    @Query("""
     SELECT * FROM transactions
-    WHERE dateEpochDay BETWEEN :startEpochDay AND :endEpochDay
-    ORDER BY dateEpochDay DESC, id DESC
-    """
-    )
+    WHERE dateEpochDay BETWEEN :start AND :end
+""")
     fun getTransactionsForMonth(
-        startEpochDay: Long,
-        endEpochDay: Long
+        start: Long,
+        end: Long
     ): Flow<List<TransactionEntity>>
+
 
     // Insert income / expense
     @Insert(onConflict = OnConflictStrategy.REPLACE)

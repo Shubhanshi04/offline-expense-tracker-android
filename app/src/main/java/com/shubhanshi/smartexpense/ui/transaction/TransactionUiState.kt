@@ -2,6 +2,7 @@ package com.shubhanshi.smartexpense.ui.transaction
 
 import com.shubhanshi.smartexpense.domain.model.Transaction
 import java.time.LocalDate
+import java.time.YearMonth
 
 /**
  * Immutable state for the screen.
@@ -9,11 +10,9 @@ import java.time.LocalDate
  */
 
 data class TransactionUiState(
-    val selectedDate: LocalDate = LocalDate.now(),
-    val transactionsForDay: List<Transaction> = emptyList(),
+    val selectedMonth: YearMonth = YearMonth.now(),
+    val transactionsByDate: Map<LocalDate, List<Transaction>> = emptyMap(),
     val monthIncome: Double = 0.0,
     val monthExpense: Double = 0.0,
-    val monthNet: Double = 0.0,
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val monthNet: Double = 0.0
 )
