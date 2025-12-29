@@ -114,6 +114,9 @@ fun CalendarTransactionScreen() {
                         onDeleteTransaction = { transaction ->
                             viewModel.deleteTransaction(transaction)
                         },
+                        onEditTransaction = {transaction->
+                            viewModel.updateTransaction(transaction)
+                        },
                         onDismiss = { showTransactionSheet = false }
                     )
                 }

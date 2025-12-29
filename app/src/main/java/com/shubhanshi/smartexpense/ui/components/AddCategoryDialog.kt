@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -16,7 +20,7 @@ import com.shubhanshi.smartexpense.domain.model.Transaction
 import com.shubhanshi.smartexpense.domain.model.TransactionType
 
 @Composable
-fun TransactionRow(transaction: Transaction, onDelete: () -> Unit) {
+fun TransactionRow(transaction: Transaction, onDelete: () -> Unit, onEdit: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -33,9 +37,18 @@ fun TransactionRow(transaction: Transaction, onDelete: () -> Unit) {
             )
         }
 
-        // simple delete button; feel free to replace with swipe to delete
-        TextButton(onClick = onDelete) {
-            Text("Delete")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(onClick = onEdit) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit")
+            }
+
+            TextButton(onClick = onDelete) {
+                Icon(Icons.Default.Delete, contentDescription = "Edit")
+            }
         }
     }
 }

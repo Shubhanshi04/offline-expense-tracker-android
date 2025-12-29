@@ -20,8 +20,11 @@ fun AddTransactionBottomSheet(
     transactions: List<Transaction>,
     onAddTransaction: (String, Double, TransactionType) -> Unit,
     onDeleteTransaction: (Transaction) -> Unit,
+    onEditTransaction: (Transaction) -> Unit,
     onDismiss: () -> Unit
 ) {
+
+    var editingTransaction by remember { mutableStateOf<Transaction?>(null) }
     var title by remember { mutableStateOf("") }
     var amount by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(TransactionType.EXPENSE) }
@@ -50,7 +53,14 @@ fun AddTransactionBottomSheet(
                 items(transactions) { transaction ->
                     TransactionRow(
                         transaction = transaction,
-                        onDelete = { onDeleteTransaction(transaction) }
+                        onDelete = { onDeleteTransaction(transaction) },
+                        onEdit = {
+                            editingTransaction = transaction
+                            title = transaction.title
+                            amount = transaction.amount.toString()
+                            selectedType = transaction.type
+
+                        }
                     )
                 }
             }
@@ -94,14 +104,33 @@ fun AddTransactionBottomSheet(
 
         Button(
             onClick = {
-                val parsedAmount = amount.toDoubleOrNull() ?: return@Button
-                onAddTransaction(title, parsedAmount, selectedType)
+                val amt = amount.toDoubleOrNull() ?: return@Button
+
+                if (editingTransaction == null) {
+                    // ➕ ADD
+                    onAddTransaction(title, amt, selectedType)
+                } else {
+                    // ✏️ EDIT
+                    onEditTransaction(
+                        editingTransaction!!.copy(
+                            title = title,
+                            amount = amt,
+                            type = selectedType
+                        )
+                    )
+                }
+
+                // reset
+                editingTransaction = null
                 title = ""
                 amount = ""
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Add Transaction")
+            Text(
+                if (editingTransaction == null) "Add Transaction"
+                else "Update Transaction"
+            )
         }
 
         Spacer(Modifier.height(8.dp))

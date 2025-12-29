@@ -4,8 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
 
 @Dao
 interface TransactionDao {
@@ -46,6 +46,9 @@ interface TransactionDao {
     suspend fun deleteTransaction(
         id: Long
     )
+
+    @Update
+    suspend fun updateTransaction(transaction: TransactionEntity)
 
     // Clear a specific day
     @Query("DELETE from transactions WHERE dateEpochDay =:dateEpochDay" )
